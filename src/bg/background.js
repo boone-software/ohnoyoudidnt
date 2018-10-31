@@ -35,7 +35,7 @@ function checkActive(tabs) {
                     if (chrome.runtime.lastError && chrome.runtime.lastError.message == "The tab was closed.") {
                         console.log("Crashed: ", thisTab.title, thisTab.id);
                         var m = { eventType: "ChromeStat", crash: "true", pageUrl: thisTab.url, pageTitle: thisTab.title }
-                        postToNewRelic('gVH1QCskjD8LxAb5Vg1KgVzP5ftQGljR', 1482036, m) //post crash to NR
+                        postToNewRelic('<insertkey>', <accountId>, m) //post crash to NR
                         console.log("Reloading: ", thisTab.title, thisTab.id);
                         chrome.tabs.reload(thisTab.id); //reload it
                     }
@@ -65,7 +65,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
   if (info.status == "loading" || info.status == "complete") { // 2 status events are fired upon 'onUpdated' - we send both occurrences
     if (info.url === undefined){
       var refresh = { eventType: "ChromeStat", reloadStatus: info.status, pageUrl: tab.url, pageTitle: tab.title };
-      postToNewRelic('gVH1QCskjD8LxAb5Vg1KgVzP5ftQGljR', 1482036, refresh); //post a refresh event to NR
+      postToNewRelic('<insertkey>', <accountId>, refresh); //post a refresh event to NR
     }
   }
 });
