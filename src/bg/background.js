@@ -1,12 +1,16 @@
-/* Oh no you didn't! 
+/* Oh no you didn't!
  * Automatic reload of crashed tabs
- * https://github.com/unclespode/ohnoyoudidnt/tree/master
+ * source: https://github.com/unclespode/ohnoyoudidnt/tree/master
  */
 
  /*
 Copy this into a javascript console in a tab to crash it.
 var memoryEater = "nom"; while(true) {memoryEater = memoryEater += "nom";}
 */
+
+/*
+UPDATE 10/31/18- Ability to post results to New Relic and track # crashes, reloads, etc.
+/*
 
 //Track how many times our no-op was a success
 var tabSuccessCount = {};
@@ -33,12 +37,17 @@ function checkActive(tabs) {
                     //If it reports it's closed, then it's crashed, because a genuine close fires an event. A crashed tab does not.
                     if (chrome.runtime.lastError && chrome.runtime.lastError.message == "The tab was closed.") {
                         console.log("Crashed: ", thisTab.title, thisTab.id);
-                        
-                        //Only reload it if at least one sucessful no-op has occurred. 
+                        var m = { eventType: "ChromeStat", crash: "true", pageUrl: thisTab.url, pageTitle: thisTab.title }
+                        postToNewRelic(<insert_key>, <account_id>, m) //post crash to NR
+
+
+                        //Only reload it if at least one sucessful no-op has occurred.
                         //I'm not sure if this is needed anymore, but it's not a bad check to do
                         if (tabSuccessCount[thisTab.id] > 0) {
                             console.log("Reloading: ", thisTab.title, thisTab.id);
                             chrome.tabs.reload(thisTab.id); //reload it
+                            var s = { eventType: "ChromeStat", reload: "true", pageUrl: thisTab.url, pageTitle: thisTab.title }
+                            postToNewRelic(<insert_key>, <account_id>, s) //post successful reload to NR
                         }
                     } else {
                         //Sucessfully ran our no-op, so add it up
@@ -51,10 +60,20 @@ function checkActive(tabs) {
     }
 }
 
-/*Check once a second to make sure tabs are still responding*/
+function postToNewRelic(insertKey, accountId, message) {
+  var req = new XMLHttpRequest();
+  var url = "https://insights-collector.newrelic.com/v1/accounts/" + String(accountId) + "/events";
+
+  req.open("POST", url, true);
+  req.setRequestHeader("Content-Type", "application/json");
+  req.setRequestHeader("X-Insert-Key", insertKey);
+  req.send(JSON.stringify(message));
+}
+
+/*Check once a minute to make sure tabs are still responding*/
 setInterval(function() {
     chrome.tabs.query({}, checkActive);
-}, 1000);
+}, 60000);
 
 //If the tab reloads, reset stats
 chrome.tabs.onUpdated.addListener(tabChanged);
