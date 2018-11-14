@@ -1,8 +1,3 @@
-/* Oh no you didn't!
- * Automatic reload of crashed tabs
- * source: https://github.com/unclespode/ohnoyoudidnt/tree/master
- */
-
  /*
 Copy this into a javascript console in a tab to crash it.
 var memoryEater = "nom"; while(true) {memoryEater = memoryEater += "nom";}
@@ -11,6 +6,10 @@ var memoryEater = "nom"; while(true) {memoryEater = memoryEater += "nom";}
 /*
 UPDATE 10/31/18- Ability to post results to New Relic and track # crashes, reloads, etc.
 */
+
+const NEW_RELIC_ACCOUNT_ID = '<account-id>';
+const NEW_RELIC_TOKEN = '<token>';
+
 
 function checkActive(tabs) {
 
@@ -35,7 +34,7 @@ function checkActive(tabs) {
                     if (chrome.runtime.lastError && chrome.runtime.lastError.message == "The tab was closed.") {
                         console.log("Crashed: ", thisTab.title, thisTab.id);
                         var m = { eventType: "ChromeStat", crash: "true", pageUrl: thisTab.url, pageTitle: thisTab.title }
-                        postToNewRelic('<insertkey>', <accountId>, m) //post crash to NR
+                        postToNewRelic(m) //post crash to NR
                         console.log("Reloading: ", thisTab.title, thisTab.id);
                         chrome.tabs.reload(thisTab.id); //reload it
                     }
@@ -45,13 +44,13 @@ function checkActive(tabs) {
     }
 }
 
-function postToNewRelic(insertKey, accountId, message) {
+function postToNewRelic(message) {
   var req = new XMLHttpRequest();
-  var url = "https://insights-collector.newrelic.com/v1/accounts/" + String(accountId) + "/events";
+  var url = "https://insights-collector.newrelic.com/v1/accounts/" + NEW_RELIC_ACCOUNT_ID + "/events";
 
   req.open("POST", url, true);
   req.setRequestHeader("Content-Type", "application/json");
-  req.setRequestHeader("X-Insert-Key", insertKey);
+  req.setRequestHeader("X-Insert-Key", NEW_RELIC_TOKEN);
   req.send(JSON.stringify(message));
 }
 
@@ -65,7 +64,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
   if (info.status == "loading" || info.status == "complete") { // 2 status events are fired upon 'onUpdated' - we send both occurrences
     if (info.url === undefined){
       var refresh = { eventType: "ChromeStat", reloadStatus: info.status, pageUrl: tab.url, pageTitle: tab.title };
-      postToNewRelic('<insertkey>', <accountId>, refresh); //post a refresh event to NR
+      postToNewRelic(refresh); //post a refresh event to NR
     }
   }
 });
