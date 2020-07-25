@@ -8,12 +8,12 @@ This is not a replacement for correcting problems in the first place (memory lea
 
 # Installation
 
-1.) Download and unzip package onto kiosk or machine running Chrome
-2.) Open Chrome extensions - chrome://extensions
-3.) Enable developer mode
-4.) Select "Load unpacked", select the base folder ("ohnoyoudidnt"), and click 'ok'
-5.) Turn developer mode off
-6.) Simulate a failure!
+1. Download and unzip package onto kiosk or machine running Chrome
+2. Open Chrome extensions - chrome://extensions
+3. Enable developer mode
+4. Select "Load unpacked", select the base folder ("ohnoyoudidnt"), and click 'ok'
+5. Turn developer mode off
+6. Simulate a failure!
 
 # Additional notes
 
